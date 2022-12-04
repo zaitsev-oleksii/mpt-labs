@@ -49,7 +49,7 @@ class BlockHeader {
   };
 
   constructor(block, { version, prevBlockHash, bits, nonce, hash } = {}) {
-    this.reverse = version ?? this.#defaults.version;
+    this.version = version ?? this.#defaults.version;
     this.prevBlockHash = prevBlockHash ?? this.#defaults.prevBlockHash;
     this.nonce = nonce ?? this.#defaults.nonce;
     this.bits = bits ?? this.#defaults.bits;
