@@ -54,6 +54,7 @@ class BlockHeader {
     this.nonce = nonce ?? this.#defaults.nonce;
     this.bits = bits ?? this.#defaults.bits;
     this.hash = hash ?? this.#defaults.hash;
+    this.timestamp = Math.round(Date.now() / 1000);
     this.block = block ?? null;
   }
 
@@ -85,6 +86,19 @@ class BlockHeader {
       iter += 1;
     }
   }
+
+  serialize() {
+    const { version, prevBlockHash, nonce, bits, hash, timestamp, merkleRoot } = this;
+    return {
+      version,
+      prevBlockHash,
+      nonce,
+      bits,
+      hash,
+      timestamp,
+      merkleRoot
+    };
+  }
 }
 
 class Block {
@@ -102,6 +116,16 @@ class Block {
   mine() {
     this.header.mine();
   }
+
+  serialize() {
+    const { height, size, txs } = this;
+    return {
+      height,
+      size,
+      txs,
+      header: this.header.serialize(),
+    };
+  }
 }
 
 class BlockChain {
@@ -111,27 +135,35 @@ class BlockChain {
 
   addBlock(prevBlockHash) {
     const height = this.chain.length;
-    const block = new Block({ height, prevBlockHash, txs: [`Alex sent ${height} coins to Alice`] });
+    const block = new Block({
+      height,
+      prevBlockHash,
+      txs: [`Alex sent ${height} coins to Alice`],
+    });
     this.chain.push(block);
     return block;
   }
-    
+
   get genesisBlock() {
-      return this.chain[0];
+    return this.chain[0];
+  }
+
+  serialize() {
+    return this.chain.map((block) => block.serialize());
   }
 }
 
 const run = () => {
   const blockChain = new BlockChain();
 
-  console.log(blockChain.genesisBlock);
+  console.log(blockChain.genesisBlock.serialize());
   blockChain.genesisBlock.mine();
-  console.log(blockChain.genesisBlock);
+  console.log(blockChain.genesisBlock.serialize());
 
   const block = blockChain.addBlock(blockChain.genesisBlock.header.hash);
   block.mine();
 
-  console.log(blockChain.chain);
-}
+  console.log(blockChain.serialize());
+};
 
 run();
