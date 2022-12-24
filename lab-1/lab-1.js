@@ -47,6 +47,7 @@ class BlockHeader {
     nonce: 0,
     hash: null,
   };
+  #block = null;
 
   constructor(block, { version, prevBlockHash, bits, nonce, hash } = {}) {
     this.version = version ?? this.#defaults.version;
@@ -55,11 +56,11 @@ class BlockHeader {
     this.bits = bits ?? this.#defaults.bits;
     this.hash = hash ?? this.#defaults.hash;
     this.timestamp = Math.round(Date.now() / 1000);
-    this.block = block ?? null;
+    this.#block = block;
   }
 
   get merkleRoot() {
-    return getMerkleRoot(this.block.txs);
+    return getMerkleRoot(this.#block.txs);
   }
 
   mine() {
@@ -96,7 +97,7 @@ class BlockHeader {
       bits,
       hash,
       timestamp,
-      merkleRoot
+      merkleRoot,
     };
   }
 }
@@ -134,7 +135,10 @@ class BlockChain {
   }
 
   addBlock(prevBlockHash) {
-    const height = this.chain.length;
+    const prevBlock = this.chain.find(
+        (block) => block.header.hash === prevBlockHash
+    );
+    const height = prevBlock.height + 1;
     const block = new Block({
       height,
       prevBlockHash,
